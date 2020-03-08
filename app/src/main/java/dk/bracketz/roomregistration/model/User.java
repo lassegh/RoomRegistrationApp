@@ -8,6 +8,10 @@ public class User {
 
     }
 
+    public boolean isSomeoneLoggedIn(){
+        return !email.isEmpty() && !password.isEmpty();
+    }
+
     public boolean login(String email, String password){
         this.email = email;
         this.password = password;
