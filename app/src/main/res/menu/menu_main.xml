@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="dk.bracketz.roomregistration.MainActivity">
+
+    <item
+        android:id="@+id/action_select_room"
+        android:icon="@mipmap/ic_menu_mark"
+        android:orderInCategory="1"
+        android:title="Select Room"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_log_in"
+        android:icon="@mipmap/ic_menu_login"
+        android:orderInCategory="2"
+        android:title="Log In"
+        app:showAsAction="ifRoom" />
+
+</menu>
