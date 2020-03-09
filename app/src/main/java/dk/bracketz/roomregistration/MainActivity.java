@@ -50,12 +50,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ReservationAdapter adapter;
     RecyclerView recyclerView;
 
+    // Toolbar instance
+    Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Room RO-D3.07");
         setSupportActionBar(toolbar);
+
 
         // Floating action button
         FloatingActionButton fab = findViewById(R.id.fab);
