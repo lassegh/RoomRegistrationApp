@@ -1,6 +1,7 @@
 package dk.bracketz.roomregistration;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -130,8 +132,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_select_room) {
-            // TODO Create intent - go to select room activity
-
+            // Create intent - go to select room activity
+            Intent intent = new Intent(this, RoomActivity.class);
+            startActivityForResult(intent,42); // Denne linie bruges hvis man forventer at få data retur. 42 er tilfældigt
             // TODO get roomId on the way back
 
             return true;
@@ -222,5 +225,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         adapter.setOnItemClickListener((view, position, item) -> {
             Log.d("tag","");
         });
+    }
+
+
+    // TODO Recieves data from go back intent
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        // Request code er en int for undersiden.
+        // result code er den status kode, der bliver sendt med, når undersiden sender retur. (setResult metoden.)
+        if (data != null){
+            super.onActivityResult(requestCode, resultCode, data);
+            int shoeSize = data.getIntExtra("SkoStr",-1); // Der kræves default value da int ikke har null
+            Log.d("myTag",""+shoeSize);
+        }
     }
 }
