@@ -7,10 +7,10 @@ public class Room {
 
     @SerializedName("id")
     @Expose
-    private Integer id;
+    public Integer id;
     @SerializedName("name")
     @Expose
-    private String name;
+    public String name;
     @SerializedName("description")
     @Expose
     private String description;

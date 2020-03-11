@@ -1,14 +1,35 @@
 package dk.bracketz.roomregistration;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
+import java.io.Serializable;
+import java.util.List;
+
+import dk.bracketz.roomregistration.adapter.ReservationAdapter;
+import dk.bracketz.roomregistration.adapter.RoomAdapter;
+import dk.bracketz.roomregistration.model.Reservation;
+import dk.bracketz.roomregistration.model.Room;
+import dk.bracketz.roomregistration.restconsuming.ApiUtils;
+import dk.bracketz.roomregistration.restconsuming.ModelService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class RoomActivity extends AppCompatActivity {
+
+    // Instance af adapter
+    RoomAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +39,12 @@ public class RoomActivity extends AppCompatActivity {
 
         // Shows backbutton in toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getAndShowRooms();
     }
 
     // Handles backbutton in toolbar
@@ -31,11 +58,57 @@ public class RoomActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // TODO On list click action - sender data med intent retur
+    // On list click action - sender data med intent retur
     public void GoBackMethod(View view) {
         Intent intent = new Intent(); // Denne intent bruges til at sende data med tilbage i stakken
         intent.putExtra("SkoStr",42);
         setResult(RESULT_OK,intent); // Denne linie tilføjer intent til 'finish'
         finish();
+    }
+
+    private void getAndShowRooms() {
+        ModelService modelStoreService = ApiUtils.getReservationService();
+        Call<List<Room>> getAllRooms = modelStoreService.getAllRooms();
+        getAllRooms.enqueue(new Callback<List<Room>>() {
+            @Override
+            public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
+                if (response.isSuccessful()) {
+                    Log.d("response",response.body().toString());
+                    populateRecyclerView(response.body());
+
+                } else {
+                    String message = "Problem " + response.code() + " " + response.message();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Room>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void populateRecyclerView(List<Room> allRooms) {
+        RecyclerView recyclerView = findViewById(R.id.roomRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new RoomAdapter(allRooms);
+        recyclerView.setAdapter(adapter);
+        adapter.setOnItemClickListener((view, position, item) -> {
+
+            // Retrieves room object from list
+            Room chosenRoom = (Room) item;
+
+            // Creates bundle and add properties to it
+            Bundle roomBundle = new Bundle();
+            roomBundle.putInt("id",chosenRoom.getId());
+            roomBundle.putString("name",chosenRoom.getName());
+
+            // Creates intent to carry data on way back
+            Intent intent = new Intent();
+            intent.putExtra("roomBundle",roomBundle);
+            Log.d("MyTag","I'm here");
+            setResult(RESULT_OK,intent); // Denne linie tilføjer intent til 'finish'
+            finish();
+        });
     }
 }

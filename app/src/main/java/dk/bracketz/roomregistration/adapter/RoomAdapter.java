@@ -21,8 +21,6 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
     private static final String LOG_TAG = "SPEC_ADAPTER";
     private final List<Room> rooms ;
     private RoomAdapter.OnItemClickListener onItemClickListener;
-    String myFormat = "dd/MM/yy hh:mm";
-    SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.GERMAN);
 
     public RoomAdapter(List<Room> rooms) {
         this.rooms = rooms;
@@ -46,7 +44,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
         Room dataItem = rooms.get(position);
         holder.nameView.setText(dataItem.getName());
         holder.descriptionView.setText(dataItem.getDescription());
-        holder.capacityView.setText(sdf.format(dataItem.getCapacity().toString()));
+        holder.capacityView.setText(dataItem.getCapacity().toString());
 
         Log.d(LOG_TAG, "onBindViewHolder called " + position);
     }

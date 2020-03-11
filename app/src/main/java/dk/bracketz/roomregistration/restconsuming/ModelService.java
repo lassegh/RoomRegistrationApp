@@ -15,9 +15,12 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ModelService {
+
     /// RESERVATIONS
-    @GET("reservations")
-    Call<List<Reservation>> getAllReservations();
+
+    // get reservations from specific room
+    @GET("reservations/room/{ids}/{fromTime}/{toTime}")
+    Call<List<Reservation>> getAllReservations(@Path("ids") int ids,@Path("fromTime") int fromTime,@Path("toTime") int toTime);
 
     @POST("reservations")
     @FormUrlEncoded

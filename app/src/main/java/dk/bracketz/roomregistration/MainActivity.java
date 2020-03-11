@@ -1,6 +1,7 @@
 package dk.bracketz.roomregistration;
 
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
@@ -10,8 +11,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -20,17 +23,21 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import dk.bracketz.roomregistration.adapter.ReservationAdapter;
+import dk.bracketz.roomregistration.adapter.SwipeToDeleteCallback;
 import dk.bracketz.roomregistration.model.Reservation;
+import dk.bracketz.roomregistration.model.Room;
+import dk.bracketz.roomregistration.model.User;
 import dk.bracketz.roomregistration.restconsuming.ApiUtils;
 import dk.bracketz.roomregistration.restconsuming.ModelService;
 import retrofit2.Call;
@@ -55,14 +62,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Toolbar instance
     Toolbar toolbar;
 
+    // Chosen room instance
+    Room chosenRoom = new Room();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        chosenRoom.setName("RO-D3.07");
+        chosenRoom.setId((int)1);
+
+        // Init User / Firebase
+        User.getInstance();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Room RO-D3.07");
         setSupportActionBar(toolbar);
-
 
         // Floating action button
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -104,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Init swipe to refresh
         SwipeRefreshLayout refreshLayout = findViewById(R.id.mainSwiperefresh);
         refreshLayout.setOnRefreshListener(() -> {
-            getAndShowReservations();
+            getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
             refreshLayout.setRefreshing(false);
         });
     }
@@ -112,7 +126,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        getAndShowReservations();
+        toolbar.setTitle(chosenRoom.getName());
+        Log.d("MyTag",chosenRoom.getName());
+        Log.d("MyTag",chosenRoom.getId().toString());
+        getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
+    }
+
+    private Integer toUnixTime(String timestamp) {
+        try {
+            if (timestamp == null) return null;
+            Date dt = sdf.parse(timestamp);
+            long epoch = dt.getTime();
+            return (int) (epoch / 1000);
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     @Override
@@ -135,13 +163,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Create intent - go to select room activity
             Intent intent = new Intent(this, RoomActivity.class);
             startActivityForResult(intent,42); // Denne linie bruges hvis man forventer at få data retur. 42 er tilfældigt
-            // TODO get roomId on the way back
-
             return true;
         }
 
         if (id== R.id.action_log_in){
-            // TODO create intent - go to login page
+            // Tcreate intent - go to login page
+            if (!User.getInstance().isSomeoneLoggedIn()){
+                // send til login skærm
+                Intent intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+            }
+            else{
+                // Spørg bruger om han ønsker at logge ud
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                alertDialog.setTitle("Logged in as "+ User.getInstance().firebaseUser.getEmail());
+                alertDialog.setMessage("Do you want to log out?");
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Yes",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                User.getInstance().logout();
+                                dialog.dismiss();
+                                Toast toast = Toast.makeText(getApplicationContext(), "You have been logged out.", Toast.LENGTH_LONG);
+                                toast.show();
+                            }
+                        });
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // No press
+                        dialog.dismiss();
+                    }
+                });
+                alertDialog.show();
+            }
             return true;
         }
 
@@ -166,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // from date is set
     private void updateLabel() {
         fromDatePicker.setText(sdf.format(fromCalendar.getTime()));
+        getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
     }
 
     // To date dialog
@@ -187,7 +242,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // to date is set
     private void updateToDateLabel() {
-        toDatePicker.setText(sdf.format(toCalendar.getTime()));
+            toDatePicker.setText(sdf.format(toCalendar.getTime()));
+            getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
     }
 
     @Override
@@ -195,9 +251,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void getAndShowReservations() {
-        ModelService modelStoreService = ApiUtils.getBookStoreService();
-        Call<List<Reservation>> getAllReservations = modelStoreService.getAllReservations();
+    private void getAndShowReservations(int roomId, int fromTime, int toTime) {
+        Log.d("MyTag","FromTime: "+fromTime);
+        Log.d("MyTag","ToTime: "+toTime);
+        ModelService modelStoreService = ApiUtils.getReservationService();
+        Call<List<Reservation>> getAllReservations = modelStoreService.getAllReservations(roomId, fromTime, toTime);
         getAllReservations.enqueue(new Callback<List<Reservation>>() {
             @Override
             public void onResponse(Call<List<Reservation>> call, Response<List<Reservation>> response) {
@@ -206,7 +264,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     populateRecyclerView(response.body());
 
                 } else {
-                    String message = "Problem " + response.code() + " " + response.message();
+                    Toast toast = Toast.makeText(getApplicationContext(), "'To Date' cannot be before 'From Date'.", Toast.LENGTH_LONG);
+                    toast.show();
                 }
             }
 
@@ -222,21 +281,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ReservationAdapter(allReservations);
         recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        ItemTouchHelper itemTouchHelper = new
+                ItemTouchHelper(new SwipeToDeleteCallback(adapter));
+        itemTouchHelper.attachToRecyclerView(recyclerView);
         adapter.setOnItemClickListener((view, position, item) -> {
             Log.d("tag","");
         });
     }
 
 
-    // TODO Recieves data from go back intent
+    // Recieves data from go back intent
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         // Request code er en int for undersiden.
         // result code er den status kode, der bliver sendt med, når undersiden sender retur. (setResult metoden.)
         if (data != null){
             super.onActivityResult(requestCode, resultCode, data);
-            int shoeSize = data.getIntExtra("SkoStr",-1); // Der kræves default value da int ikke har null
-            Log.d("myTag",""+shoeSize);
+            Bundle roomBundle = data.getBundleExtra("roomBundle");
+            chosenRoom.setName(roomBundle.getString("name"));
+            chosenRoom.setId(roomBundle.getInt("id"));
+            Log.d("MyTag",chosenRoom.getName());
         }
     }
 }

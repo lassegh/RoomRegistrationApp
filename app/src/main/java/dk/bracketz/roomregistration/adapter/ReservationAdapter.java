@@ -1,6 +1,10 @@
 package dk.bracketz.roomregistration.adapter;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.icu.text.SimpleDateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,7 +13,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +34,13 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     public ReservationAdapter(List<Reservation> reservations) {
         this.reservations = reservations;
+    }
+
+    public void deleteItem(int position) {
+        Reservation mRecentlyDeletedItem = reservations.get(position);
+        int mRecentlyDeletedItemPosition = position;
+        reservations.remove(position);
+        notifyItemRemoved(position);
     }
 
     @NonNull
@@ -57,6 +72,10 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         return reservations.size();
     }
 
+    public Context getContext() {
+        return getContext();
+    }
+
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // https://www.javatpoint.com/android-recyclerview-list-example
         final TextView purposeView, userView, fromtimeView, totimeView;
@@ -85,4 +104,8 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     public interface OnItemClickListener {
         void onItemClick(View view, int position, Reservation reservation);
     }
+
+
 }
+
+
