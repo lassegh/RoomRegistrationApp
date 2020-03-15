@@ -1,29 +1,26 @@
 package dk.bracketz.roomregistration.adapter;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import dk.bracketz.roomregistration.R;
-
 public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
-    private ReservationAdapter mAdapter;
-    private Drawable icon;
+    private static ReservationAdapter mAdapter;
     private final ColorDrawable background;
+    private Context context;
 
-    public SwipeToDeleteCallback(ReservationAdapter adapter) {
+    public SwipeToDeleteCallback(ReservationAdapter adapter, Context c) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         mAdapter = adapter;
-        icon = ContextCompat.getDrawable(adapter.getContext(),
-                R.drawable.common_google_signin_btn_text_dark);
         background = new ColorDrawable(Color.RED);
+        context = c;
     }
 
     @Override
@@ -34,15 +31,20 @@ public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
         int position = viewHolder.getAdapterPosition();
-        mAdapter.deleteItem(position);
+        if (!mAdapter.deleteItem(position)){
+            // TODO toast you need to be logged in as the reservation author to delete it
+            Toast toast = Toast.makeText(context, "You need to be logged in as the reservation author to delete it", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 
     @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         super.onChildDraw(c, recyclerView, viewHolder, dX,
                 dY, actionState, isCurrentlyActive);
+
         View itemView = viewHolder.itemView;
-        int backgroundCornerOffset = 20;
+        int backgroundCornerOffset = 2;
 
         if (dX > 0) { // Swiping to the right
             background.setBounds(itemView.getLeft(), itemView.getTop(),
@@ -56,32 +58,6 @@ public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
             background.setBounds(0, 0, 0, 0);
         }
         background.draw(c);
-
-        int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
-        int iconTop = itemView.getTop() + (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
-        int iconBottom = iconTop + icon.getIntrinsicHeight();
-
-        if (dX > 0) { // Swiping to the right
-            int iconLeft = itemView.getLeft() + iconMargin + icon.getIntrinsicWidth();
-            int iconRight = itemView.getLeft() + iconMargin;
-            icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
-
-            background.setBounds(itemView.getLeft(), itemView.getTop(),
-                    itemView.getLeft() + ((int) dX) + backgroundCornerOffset,
-                    itemView.getBottom());
-        } else if (dX < 0) { // Swiping to the left
-            int iconLeft = itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
-            int iconRight = itemView.getRight() - iconMargin;
-            icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
-
-            background.setBounds(itemView.getRight() + ((int) dX) - backgroundCornerOffset,
-                    itemView.getTop(), itemView.getRight(), itemView.getBottom());
-        } else { // view is unSwiped
-            background.setBounds(0, 0, 0, 0);
-        }
-
-        background.draw(c);
-        icon.draw(c);
     }
 
 

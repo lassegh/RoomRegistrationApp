@@ -11,12 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
@@ -24,10 +26,17 @@ import java.util.Locale;
 
 import dk.bracketz.roomregistration.R;
 import dk.bracketz.roomregistration.model.Reservation;
+import dk.bracketz.roomregistration.model.User;
+import dk.bracketz.roomregistration.restconsuming.ApiUtils;
+import dk.bracketz.roomregistration.restconsuming.ModelService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.MyViewHolder> {
+
     private static final String LOG_TAG = "SPEC_ADAPTER";
-    private final List<Reservation> reservations ;
+    private static List<Reservation> reservations ;
     private ReservationAdapter.OnItemClickListener onItemClickListener;
     String myFormat = "dd/MM/yy hh:mm";
     SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.GERMAN);
@@ -36,11 +45,35 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         this.reservations = reservations;
     }
 
-    public void deleteItem(int position) {
+    public boolean deleteItem(int position) {
         Reservation mRecentlyDeletedItem = reservations.get(position);
-        int mRecentlyDeletedItemPosition = position;
-        reservations.remove(position);
-        notifyItemRemoved(position);
+        if (User.getInstance().isSomeoneLoggedIn() && mRecentlyDeletedItem.getUserId().equals(User.getInstance().firebaseUser.getEmail())){
+            int mRecentlyDeletedItemPosition = position;
+            reservations.remove(position);
+            notifyItemRemoved(position);
+            ModelService modelStoreService = ApiUtils.getReservationService();
+            Call<Reservation> deleteResponse = modelStoreService.deleteReservation(mRecentlyDeletedItem.getId());
+            deleteResponse.enqueue(new Callback<Reservation>() {
+                @Override
+                public void onResponse(Call<Reservation> call, Response<Reservation> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("response",response.body().toString());
+                    } else {
+                        Log.d("Else","Response unsuccessful");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Reservation> call, Throwable t) {
+
+                }
+            });
+            return true;
+        }
+        else {
+            this.notifyItemChanged(position);
+            return false;
+        }
     }
 
     @NonNull
@@ -70,10 +103,6 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     @Override
     public int getItemCount() {
         return reservations.size();
-    }
-
-    public Context getContext() {
-        return getContext();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

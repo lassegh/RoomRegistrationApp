@@ -54,11 +54,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final Calendar fromCalendar = Calendar.getInstance();
     Calendar toCalendar = Calendar.getInstance();
 
-    // Instances for recyclerView
-    ArrayList<Reservation> reservations = new ArrayList<Reservation>();
-    ReservationAdapter adapter;
-    RecyclerView recyclerView;
-
     // Toolbar instance
     Toolbar toolbar;
 
@@ -279,12 +274,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void populateRecyclerView(List<Reservation> allReservations) {
         RecyclerView recyclerView = findViewById(R.id.mainRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ReservationAdapter(allReservations);
+        ReservationAdapter adapter = new ReservationAdapter(allReservations);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ItemTouchHelper itemTouchHelper = new
-                ItemTouchHelper(new SwipeToDeleteCallback(adapter));
-        itemTouchHelper.attachToRecyclerView(recyclerView);
+        if (!allReservations.isEmpty()){
+            ItemTouchHelper itemTouchHelper = new
+                    ItemTouchHelper(new SwipeToDeleteCallback(adapter, getApplicationContext()));
+            itemTouchHelper.attachToRecyclerView(recyclerView);
+        }
+
         adapter.setOnItemClickListener((view, position, item) -> {
             Log.d("tag","");
         });
