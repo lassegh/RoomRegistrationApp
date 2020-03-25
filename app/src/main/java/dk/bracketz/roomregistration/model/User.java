@@ -53,6 +53,8 @@ public class User {
         firebaseUser = null;
         if(firebaseUser== null)return true;
         return false;
+
+        // TODO sørg for at bruger glemmes på enhed
     }
 
     public static User getInstance(){

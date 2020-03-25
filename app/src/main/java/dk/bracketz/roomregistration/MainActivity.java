@@ -1,6 +1,7 @@
 package dk.bracketz.roomregistration;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         chosenRoom.setName("RO-D3.07");
         chosenRoom.setId((int)1);
+        Context thisContext = this;
 
         // Init User / Firebase
         User.getInstance();
@@ -78,8 +80,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (User.getInstance().isSomeoneLoggedIn()){
+                    Intent intent = new Intent(thisContext, AddBookingActivity.class);
+                    Bundle roomBundle = new Bundle();
+                    roomBundle.putString("name",chosenRoom.getName());
+                    roomBundle.putInt("id",chosenRoom.getId());
+                    intent.putExtra("room",roomBundle);
+                    startActivity(intent);
+                }
+                else{
+                    Toast toast = Toast.makeText(getApplicationContext(), "Please log in to create reservation", Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         });
 
@@ -140,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -148,21 +159,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // navigation bar buttons
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_select_room) {
             // Create intent - go to select room activity
             Intent intent = new Intent(this, RoomActivity.class);
-            startActivityForResult(intent,42); // Denne linie bruges hvis man forventer at få data retur. 42 er tilfældigt
+            startActivityForResult(intent,42);
             return true;
         }
 
         if (id== R.id.action_log_in){
-            // Tcreate intent - go to login page
+            // Create intent - go to login page
             if (!User.getInstance().isSomeoneLoggedIn()){
                 // send til login skærm
                 Intent intent = new Intent(this, LoginActivity.class);
@@ -292,9 +300,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Recieves data from go back intent
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        // Request code er en int for undersiden.
-        // result code er den status kode, der bliver sendt med, når undersiden sender retur. (setResult metoden.)
-        if (data != null){
+        if (requestCode == 42 && data != null){
             super.onActivityResult(requestCode, resultCode, data);
             Bundle roomBundle = data.getBundleExtra("roomBundle");
             chosenRoom.setName(roomBundle.getString("name"));
