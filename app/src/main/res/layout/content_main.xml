@@ -64,7 +64,8 @@
         android:layout_marginTop="20dp"
         android:text="From"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/textView2"
@@ -74,6 +75,7 @@
         android:layout_marginEnd="10dp"
         android:text="To"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:textStyle="bold"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

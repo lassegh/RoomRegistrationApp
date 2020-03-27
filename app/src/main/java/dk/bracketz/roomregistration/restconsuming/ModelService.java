@@ -23,9 +23,8 @@ public interface ModelService {
     Call<List<Reservation>> getAllReservations(@Path("ids") int ids,@Path("fromTime") int fromTime,@Path("toTime") int toTime);
 
     @POST("reservations")
-    @FormUrlEncoded
-    Call<Reservation> postReservation(@Field("Id") int id, @Field("FromTime") int fromTime,
-                               @Field("ToTime") int integer, @Field("UserId") String userId, @Field("Purpose") String purpose, @Field("RoomId")int roomId);
+    //@FormUrlEncoded
+    Call<Reservation> postReservation(@Body Reservation reservation);
 
     @GET("reservations/{id}")
     Call<Reservation> getOneReservation(int id);

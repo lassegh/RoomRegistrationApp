@@ -6,30 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".AddBookingActivity">
 
-
-    <TextView
-        android:id="@+id/fromText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="10dp"
-        android:text="From"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/toText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:layout_marginTop="30dp"
         android:layout_marginEnd="10dp"
         android:text="To"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editFromDateTime" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/purposeText"
@@ -37,11 +23,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="10dp"
         android:text="Purpose"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editToDateTime" />
+        app:layout_constraintTop_toBottomOf="@+id/editToTime"
+        />
 
     <Button
         android:id="@+id/saveButton"
@@ -53,44 +39,56 @@
         android:text="Save Booking"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editPurposeText" />
+        app:layout_constraintTop_toBottomOf="@+id/editPurposeText"
+        android:onClick="SaveRegistration"/>
 
     <EditText
-        android:id="@+id/editFromDateTime"
-        android:layout_width="wrap_content"
+        android:id="@+id/editToTime"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="10dp"
+        android:clickable="true"
         android:ems="10"
-        android:inputType="textPersonName"
+        android:focusable="false"
+        android:inputType="none"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fromText" />
-
-    <EditText
-        android:id="@+id/editToDateTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toText" />
+        app:layout_constraintTop_toBottomOf="@+id/toText"
+        android:textAlignment="center"/>
 
     <EditText
         android:id="@+id/editPurposeText"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
         android:ems="10"
-        android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:inputType="none"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/purposeText" />
+
+    <TextView
+        android:id="@+id/textFromTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="30dp"
+        android:text="From"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/editFromTime"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:ems="10"
+        android:inputType="none"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textFromTime"
+        android:textAlignment="center"
+        android:clickable="true"
+        android:focusable="false"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
