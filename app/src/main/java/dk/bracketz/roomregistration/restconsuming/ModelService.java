@@ -24,16 +24,19 @@ public interface ModelService {
 
     @POST("reservations")
     //@FormUrlEncoded
-    Call<Reservation> postReservation(@Body Reservation reservation);
+    Call<Integer> postReservation(@Body Reservation reservation);
 
     @GET("reservations/{id}")
     Call<Reservation> getOneReservation(int id);
 
     @DELETE("reservations/{id}")
-    Call<Reservation> deleteReservation(@Path("id") int id);
-
+    Call<Void> deleteReservation(@Path("id") int id);
 
     /// ROOMS
     @GET("rooms")
     Call<List<Room>> getAllRooms();
+
+    @GET("rooms/free/{fromTime}")
+    Call<List<Room>> getAvailableRooms(@Path("fromTime") int fromTime);
+
 }

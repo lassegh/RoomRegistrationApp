@@ -50,11 +50,15 @@ public class User {
 
     public boolean logout(){
         // log out from firebase
+        mAuth.signOut();
+
         firebaseUser = null;
         if(firebaseUser== null)return true;
         return false;
+    }
 
-        // TODO sørg for at bruger glemmes på enhed
+    public void checkUserChoice(){
+        if (!stayLoggedIn)logout();
     }
 
     public static User getInstance(){

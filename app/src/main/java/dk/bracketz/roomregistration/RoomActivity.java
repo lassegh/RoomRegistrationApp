@@ -34,17 +34,17 @@ public class RoomActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle("Select Room");
         setContentView(R.layout.activity_room);
 
         // Shows backbutton in toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        getAndShowRooms();
+        int fromTime = getIntent().getIntExtra("fromTime",-1);
+
+        if (fromTime == -1)setTitle("Select Room");
+        else setTitle("Available Rooms");
+
+        getAndShowRooms(fromTime);
     }
 
     // Handles backbutton in toolbar
@@ -66,9 +66,11 @@ public class RoomActivity extends AppCompatActivity {
         finish();
     }
 
-    private void getAndShowRooms() {
+    private void getAndShowRooms(int fromTime) {
+        Call<List<Room>> getAllRooms;
         ModelService modelStoreService = ApiUtils.getReservationService();
-        Call<List<Room>> getAllRooms = modelStoreService.getAllRooms();
+        if(fromTime==-1){getAllRooms = modelStoreService.getAllRooms();}
+        else{getAllRooms = modelStoreService.getAvailableRooms(fromTime);}
         getAllRooms.enqueue(new Callback<List<Room>>() {
             @Override
             public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {

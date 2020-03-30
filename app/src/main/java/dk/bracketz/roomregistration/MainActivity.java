@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         chosenRoom.setName("RO-D3.07");
-        chosenRoom.setId((int)1);
+        chosenRoom.setId(1);
         Context thisContext = this;
 
         // Init User / Firebase
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fromDatePicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new DatePickerDialog(MainActivity.this, fromDate, fromCalendar
+                new DatePickerDialog(MainActivity.this, setDate(fromCalendar), fromCalendar
                         .get(Calendar.YEAR), fromCalendar.get(Calendar.MONTH),
                         fromCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toDatePicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new DatePickerDialog(MainActivity.this, toDatePickerListener, toCalendar
+                new DatePickerDialog(MainActivity.this, setDate(toCalendar), toCalendar
                         .get(Calendar.YEAR), toCalendar.get(Calendar.MONTH),
                         toCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
@@ -205,48 +205,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    // From date dialog
-    DatePickerDialog.OnDateSetListener fromDate = new DatePickerDialog.OnDateSetListener() {
-        @Override
-        public void onDateSet(DatePicker view, int year, int monthOfYear,
-                              int dayOfMonth) {
-            fromCalendar.set(Calendar.YEAR, year);
-            fromCalendar.set(Calendar.MONTH, monthOfYear);
-            fromCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            toCalendar.set(Calendar.YEAR, year);
-            toCalendar.set(Calendar.MONTH, monthOfYear);
-            toCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            updateLabel();
-        }
-    };
-
-    // from date is set
-    private void updateLabel() {
-        fromDatePicker.setText(sdf.format(fromCalendar.getTime()));
-        getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
-    }
-
-    // To date dialog
-    DatePickerDialog.OnDateSetListener toDatePickerListener = new DatePickerDialog.OnDateSetListener() {
-
-        @Override
-        public void onDateSet(DatePicker view, int year, int monthOfYear,
-                              int dayOfMonth) {
-            fromCalendar.set(Calendar.YEAR, year);
-            fromCalendar.set(Calendar.MONTH, monthOfYear);
-            fromCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            toCalendar.set(Calendar.YEAR, year);
-            toCalendar.set(Calendar.MONTH, monthOfYear);
-            toCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            updateToDateLabel();
-        }
-
-    };
-
-    // to date is set
-    private void updateToDateLabel() {
-            toDatePicker.setText(sdf.format(toCalendar.getTime()));
-            getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
+    // Date dialog
+    private DatePickerDialog.OnDateSetListener setDate(Calendar cal){
+        return new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                  int dayOfMonth) {
+                cal.set(Calendar.YEAR, year);
+                cal.set(Calendar.MONTH, monthOfYear);
+                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                fromDatePicker.setText(sdf.format(fromCalendar.getTime()));
+                toDatePicker.setText(sdf.format(toCalendar.getTime()));
+                getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
+            }
+        };
     }
 
     @Override
@@ -274,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onFailure(Call<List<Reservation>> call, Throwable t) {
-
+                Log.e("Error",t.getMessage());
             }
         });
     }

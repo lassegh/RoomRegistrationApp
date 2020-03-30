@@ -32,7 +32,7 @@ public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
         int position = viewHolder.getAdapterPosition();
         if (!mAdapter.deleteItem(position)){
-            // TODO toast you need to be logged in as the reservation author to delete it
+            // toast you need to be logged in as the reservation author to delete it
             Toast toast = Toast.makeText(context, "You need to be logged in as the reservation author to delete it", Toast.LENGTH_LONG);
             toast.show();
         }

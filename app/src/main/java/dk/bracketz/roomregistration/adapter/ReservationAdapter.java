@@ -52,20 +52,21 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
             reservations.remove(position);
             notifyItemRemoved(position);
             ModelService modelStoreService = ApiUtils.getReservationService();
-            Call<Reservation> deleteResponse = modelStoreService.deleteReservation(mRecentlyDeletedItem.getId());
-            deleteResponse.enqueue(new Callback<Reservation>() {
+            Call<Void> deleteResponse = modelStoreService.deleteReservation(mRecentlyDeletedItem.getId());
+            deleteResponse.enqueue(new Callback<Void>() {
                 @Override
-                public void onResponse(Call<Reservation> call, Response<Reservation> response) {
+                public void onResponse(Call<Void> call, Response<Void> response) {
                     if (response.isSuccessful()) {
-                        Log.d("response",response.body().toString());
+                        User.getInstance().checkUserChoice();
+                        Log.d("response",response.code()+"");
                     } else {
-                        Log.d("Else","Response unsuccessful");
+                        Log.d("response","Response unsuccessful");
                     }
                 }
 
                 @Override
-                public void onFailure(Call<Reservation> call, Throwable t) {
-
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Log.e("Error",t.getMessage());
                 }
             });
             return true;
