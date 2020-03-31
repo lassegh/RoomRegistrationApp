@@ -25,11 +25,9 @@ import retrofit2.Response;
 
 public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.MyViewHolder> {
 
-    private static final String LOG_TAG = "SPEC_ADAPTER";
     private static List<Reservation> reservations ;
     private ReservationAdapter.OnItemClickListener onItemClickListener;
-    private final String myFormat = "dd/MM/yy hh:mm";
-    private final SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.GERMAN);
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm", Locale.GERMAN);
 
     public ReservationAdapter(List<Reservation> reservations) {
         this.reservations = reservations;
@@ -73,9 +71,9 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.reservation_row, parent, false);
         //View v = makeView(parent.getContext());
-        Log.d(LOG_TAG, v.toString());
+        Log.d("MyTag", v.toString());
         ReservationAdapter.MyViewHolder vh = new ReservationAdapter.MyViewHolder(v);
-        Log.d(LOG_TAG, "onCreateViewHolder called");
+        Log.d("MyTag", "onCreateViewHolder called");
         return vh;
     }
 
@@ -84,10 +82,10 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         Reservation dataItem = reservations.get(position);
         holder.purposeView.setText(dataItem.getPurpose());
         holder.userView.setText(dataItem.getUserId());
-        holder.fromtimeView.setText(sdf.format(dataItem.getFromTime()));
-        holder.totimeView.setText(sdf.format(dataItem.getToTime()));
+        holder.fromtimeView.setText(dateFormat.format(dataItem.getFromTime()));
+        holder.totimeView.setText(dateFormat.format(dataItem.getToTime()));
 
-        Log.d(LOG_TAG, "onBindViewHolder called " + position);
+        Log.d("MyTag", "onBindViewHolder called " + position);
     }
 
     @Override

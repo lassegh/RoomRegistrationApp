@@ -2,7 +2,6 @@ package dk.bracketz.roomregistration;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
@@ -23,7 +22,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,8 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Instances for datePickers
     private EditText fromDatePicker;
     private EditText toDatePicker;
-    private final String myFormat = "dd/MM/yy";
-    private final SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.GERMAN);
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy", Locale.GERMAN);
     private final Calendar fromCalendar = Calendar.getInstance();
     private final Calendar toCalendar = Calendar.getInstance();
 
@@ -72,54 +69,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("RO-D3.07");
         setSupportActionBar(toolbar);
 
         // Floating action button
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (User.getInstance().isSomeoneLoggedIn()){
-                    Intent intent = new Intent(thisContext, AddBookingActivity.class);
-                    Bundle roomBundle = new Bundle();
-                    roomBundle.putString("name",chosenRoom.getName());
-                    roomBundle.putInt("id",chosenRoom.getId());
-                    intent.putExtra("room",roomBundle);
-                    startActivity(intent);
-                }
-                else{
-                    Toast toast = Toast.makeText(getApplicationContext(), "Please log in to create reservation", Toast.LENGTH_LONG);
-                    toast.show();
-                }
+        fab.setOnClickListener(view -> {
+            if (User.getInstance().isSomeoneLoggedIn()){
+                Intent intent = new Intent(thisContext, AddBookingActivity.class);
+                Bundle roomBundle = new Bundle();
+                roomBundle.putString("name",chosenRoom.getName());
+                roomBundle.putInt("id",chosenRoom.getId());
+                intent.putExtra("room",roomBundle);
+                startActivity(intent);
+            }
+            else{
+                Toast toast = Toast.makeText(getApplicationContext(), "Please log in to create reservation", Toast.LENGTH_LONG);
+                toast.show();
             }
         });
 
         // From Date Picker init
         fromDatePicker = (EditText) findViewById(R.id.mainInputFromDateEditText);
-        fromDatePicker.setText(sdf.format(new Date()));
-        fromDatePicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new DatePickerDialog(MainActivity.this, setDate(fromCalendar), fromCalendar
-                        .get(Calendar.YEAR), fromCalendar.get(Calendar.MONTH),
-                        fromCalendar.get(Calendar.DAY_OF_MONTH)).show();
-            }
-        });
+        fromDatePicker.setText(dateFormat.format(new Date()));
+        fromDatePicker.setOnClickListener(v -> new DatePickerDialog(MainActivity.this, setDate(fromCalendar), fromCalendar
+                .get(Calendar.YEAR), fromCalendar.get(Calendar.MONTH),
+                fromCalendar.get(Calendar.DAY_OF_MONTH)).show());
 
         // To date picker init
         toDatePicker = (EditText) findViewById(R.id.mainInputToDateEditText);
         final Date toDate = new Date();
         toCalendar.setTime(toDate);
         toCalendar.add(Calendar.DATE,7);
-        toDatePicker.setText(sdf.format(toCalendar.getTime()));
-        toDatePicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new DatePickerDialog(MainActivity.this, setDate(toCalendar), toCalendar
-                        .get(Calendar.YEAR), toCalendar.get(Calendar.MONTH),
-                        toCalendar.get(Calendar.DAY_OF_MONTH)).show();
-            }
-        });
+        toDatePicker.setText(dateFormat.format(toCalendar.getTime()));
+        toDatePicker.setOnClickListener(v -> new DatePickerDialog(MainActivity.this, setDate(toCalendar), toCalendar
+                .get(Calendar.YEAR), toCalendar.get(Calendar.MONTH),
+                toCalendar.get(Calendar.DAY_OF_MONTH)).show());
 
         // Init swipe to refresh
         SwipeRefreshLayout refreshLayout = findViewById(R.id.mainSwiperefresh);
@@ -141,10 +126,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Integer toUnixTime(String timestamp) {
         try {
             if (timestamp == null) return null;
-            Date dt = sdf.parse(timestamp);
+            Date dt = dateFormat.parse(timestamp);
             long epoch = dt.getTime();
             return (int) (epoch / 1000);
         } catch (ParseException e) {
+            Log.e("MyTag","String / timestamp was null");
             return null;
         }
     }
@@ -185,12 +171,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Toast toast = Toast.makeText(getApplicationContext(), "You have been logged out.", Toast.LENGTH_LONG);
                             toast.show();
                         });
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // No press
-                        dialog.dismiss();
-                    }
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "No", (dialog, which) -> {
+                    // No press
+                    dialog.dismiss();
                 });
                 alertDialog.show();
             }
@@ -206,8 +189,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             cal.set(Calendar.YEAR, year);
             cal.set(Calendar.MONTH, monthOfYear);
             cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            fromDatePicker.setText(sdf.format(fromCalendar.getTime()));
-            toDatePicker.setText(sdf.format(toCalendar.getTime()));
+            fromDatePicker.setText(dateFormat.format(fromCalendar.getTime()));
+            toDatePicker.setText(dateFormat.format(toCalendar.getTime()));
             getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
         };
     }
@@ -226,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onResponse(Call<List<Reservation>> call, Response<List<Reservation>> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response",response.body().toString());
+                    Log.d("MyTag",response.body().toString());
                     populateRecyclerView(response.body());
 
                 } else {
@@ -237,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onFailure(Call<List<Reservation>> call, Throwable t) {
-                Log.e("Error",t.getMessage());
+                Log.e("MyTag",t.getMessage());
             }
         });
     }
@@ -253,10 +236,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ItemTouchHelper(new SwipeToDeleteCallback(adapter, getApplicationContext()));
             itemTouchHelper.attachToRecyclerView(recyclerView);
         }
-
-        adapter.setOnItemClickListener((view, position, item) -> {
-            Log.d("tag","");
-        });
     }
 
 

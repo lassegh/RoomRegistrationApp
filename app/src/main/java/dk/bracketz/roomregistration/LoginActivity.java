@@ -31,11 +31,8 @@ public class LoginActivity extends AppCompatActivity {
         // Shows backbutton in toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Switch toggle = (Switch) findViewById(R.id.loginStayInSwitch);
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { LoginActivity.this.onCheckedChanged(buttonView,isChecked); }
-        });
+        Switch toggle = findViewById(R.id.loginStayInSwitch);
+        toggle.setOnCheckedChangeListener((buttonView, isChecked) -> LoginActivity.this.onCheckedChanged(buttonView,isChecked));
 
         stayLoggedIn = User.getInstance().stayLoggedIn;
         toggle.setChecked(stayLoggedIn);
@@ -60,14 +57,10 @@ public class LoginActivity extends AppCompatActivity {
     // Handles backbutton in toolbar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) // Press Back Icon
-        {
-            finish();
-        }
+        if (item.getItemId() == android.R.id.home) finish();
 
         return super.onOptionsItemSelected(item);
     }
-
 
     public void onLogin(View view) {
         EditText emailEdit = (EditText)findViewById(R.id.loginEnterMail);
@@ -79,23 +72,22 @@ public class LoginActivity extends AppCompatActivity {
         else {
             // log in to firebase
             User.getInstance().mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                // Sign in success, update UI with the signed-in user's information
-                                Log.d("MyTag", "signInWithEmail:success");
-                                User.getInstance().login(User.getInstance().mAuth.getCurrentUser(), stayLoggedIn);
-                                finish();
-                                Toast toast = Toast.makeText(getApplicationContext(), "Logged in successfully.", Toast.LENGTH_LONG);
-                                toast.show();
-                            } else {
-                                loginFailed();
-                            }
-
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d("MyTag", "signInWithEmail:success");
+                            User.getInstance().login(User.getInstance().mAuth.getCurrentUser(), stayLoggedIn);
+                            finish();
+                            Toast toast = Toast.makeText(getApplicationContext(), "Logged in successfully.", Toast.LENGTH_LONG);
+                            toast.show();
+                        } else {
+                            loginFailed();
                         }
+
                     });
         }
+
+        // TODO save user credentials on device if stayLoggedIn
     }
 
     private void loginFailed(){

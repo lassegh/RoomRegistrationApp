@@ -34,6 +34,8 @@ public class User {
         // log out from firebase
         mAuth.signOut();
         firebaseUser = null;
+
+        // TODO delete user credentials from device
     }
 
     public void checkUserChoice(){

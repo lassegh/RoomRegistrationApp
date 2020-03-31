@@ -16,7 +16,7 @@ import dk.bracketz.roomregistration.R;
 import dk.bracketz.roomregistration.model.Room;
 
 public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> {
-    private static final String LOG_TAG = "SPEC_ADAPTER";
+
     private final List<Room> rooms ;
     private RoomAdapter.OnItemClickListener onItemClickListener;
 
@@ -31,9 +31,9 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.room_row, parent, false);
         //View v = makeView(parent.getContext());
-        Log.d(LOG_TAG, v.toString());
+        Log.d("MyTag", v.toString());
         RoomAdapter.MyViewHolder vh = new RoomAdapter.MyViewHolder(v);
-        Log.d(LOG_TAG, "onCreateViewHolder called");
+        Log.d("MyTag", "onCreateViewHolder called");
         return vh;
     }
 
@@ -44,7 +44,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
         holder.descriptionView.setText(dataItem.getDescription());
         holder.capacityView.setText(dataItem.getCapacity().toString());
 
-        Log.d(LOG_TAG, "onBindViewHolder called " + position);
+        Log.d("MyTag", "onBindViewHolder called " + position);
     }
 
     @Override

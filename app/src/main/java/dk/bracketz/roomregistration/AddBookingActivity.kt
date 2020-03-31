@@ -1,9 +1,6 @@
 package dk.bracketz.roomregistration
 
 import android.app.DatePickerDialog
-import android.app.DatePickerDialog.OnDateSetListener
-import android.app.TimePickerDialog
-import android.app.TimePickerDialog.OnTimeSetListener
 import android.content.Context
 import android.content.Intent
 import android.icu.text.SimpleDateFormat
@@ -15,7 +12,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -30,17 +26,15 @@ import kotlinx.android.synthetic.main.activity_add_booking.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.text.ParseException
 import java.util.*
-import kotlin.math.log
 
 
 class AddBookingActivity : AppCompatActivity() {
 
-    var chosenRoom = Room()
-    var timeFormat = SimpleDateFormat("dd/MM/yy - HH:mm", Locale.GERMAN)
-    val fromTime = Calendar.getInstance()
-    val toTime = Calendar.getInstance()
+    private var chosenRoom = Room()
+    private var timeFormat = SimpleDateFormat("dd/MM/yy - HH:mm", Locale.GERMAN)
+    private val fromTime = Calendar.getInstance()!!
+    private val toTime = Calendar.getInstance()!!
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,13 +50,13 @@ class AddBookingActivity : AppCompatActivity() {
         editToTime.setText(timeFormat.format(toTime.time))
 
         // From time picker
-        editFromTime.setOnClickListener(View.OnClickListener {
+        editFromTime.setOnClickListener({
             DatePickerDialog(this,calendarSetter(fromTime, editFromTime, this, timeFormat), fromTime
                     .get(Calendar.YEAR), fromTime.get(Calendar.MONTH), fromTime.get(Calendar.DAY_OF_MONTH)).show()
         })
 
         // To time picker
-        editToTime.setOnClickListener(View.OnClickListener {
+        editToTime.setOnClickListener({
             DatePickerDialog(this,calendarSetter(toTime, editToTime, this, timeFormat), toTime
                     .get(Calendar.YEAR), toTime.get(Calendar.MONTH), toTime.get(Calendar.DAY_OF_MONTH)).show()
         })
@@ -87,7 +81,7 @@ class AddBookingActivity : AppCompatActivity() {
         return true
     }
 
-    fun setChosenRoom(roomBundle:Bundle) {
+    private fun setChosenRoom(roomBundle:Bundle) {
         chosenRoom.name = roomBundle.getString("name")
         chosenRoom.id = roomBundle.getInt("id")
     }
@@ -131,7 +125,7 @@ class AddBookingActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 42 && data != null) {
             super.onActivityResult(requestCode, resultCode, data)
-            val roomBundle = data?.getBundleExtra("roomBundle")
+            val roomBundle = data.getBundleExtra("roomBundle")
             chosenRoom.setName(roomBundle?.getString("name"))
             chosenRoom.setId(roomBundle?.getInt("id"))
             Log.d("MyTag", chosenRoom.getName())
@@ -144,47 +138,50 @@ class AddBookingActivity : AppCompatActivity() {
             return (epoch / 1000).toInt()
     }
 
-    fun SaveRegistration(view: View) {
+    fun preSave(view: View) {
         if (fromTime.time.time>toTime.time.time){
-            Toast.makeText(getApplicationContext(), "'To Date' cannot be before 'From Date'.", Toast.LENGTH_LONG).show()
+            Toast.makeText(applicationContext, "'To Date' cannot be before 'From Date'.", Toast.LENGTH_LONG).show()
         }
-        else if (editPurposeText.text.toString().isNullOrEmpty() || editPurposeText.text.all { c -> c == ' ' }){
-            Toast.makeText(getApplicationContext(), "Please enter a purpose", Toast.LENGTH_LONG).show()
+        else if (editPurposeText.text.toString().isEmpty() || editPurposeText.text.all { c -> c == ' ' }){
+            Toast.makeText(applicationContext, "Please enter a purpose", Toast.LENGTH_LONG).show()
         }
         else {
-            val reservation = Reservation(1,toUnixTime(editFromTime.text.toString()),toUnixTime(editToTime.text.toString()),User.getInstance().firebaseUser.email,editPurposeText.text.toString(),chosenRoom.id)
-            val modelStoreService = ApiUtils.getReservationService()
-            var response = modelStoreService.postReservation(reservation)
-            response.enqueue(object : Callback<Int> {
-                override fun onResponse(call: Call<Int>, response: Response<Int>) {
-                    if (response.isSuccessful) {
-                        Log.d("response", response.body().toString())
-                        Toast.makeText(applicationContext, "Room successfully booked.", Toast.LENGTH_LONG).show()
-                        User.getInstance().checkUserChoice();
-                        finish()
-                    }
-                    else{
-                        Log.e("Eroor",response.code().toString())
-
-                        // Dismiss keyboard
-                        val keyboard = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                        keyboard.hideSoftInputFromWindow(view.windowToken, 0)
-
-                        // Snackbar
-                        val snack = Snackbar.make(view,"Room is occupied.",Snackbar.LENGTH_LONG)
-                        snack.setAction("Find available room", View.OnClickListener {
-                            gotoSelectRoom()
-                        })
-                        snack.show()
-                    }
-                }
-
-                override fun onFailure(call: Call<Int>, t: Throwable) {
-                    Log.e("Error",t.message)
-                }
-            })
+            saveRegistration(view)
         }
 
     }
 
+    private fun saveRegistration(view: View){
+        val reservation = Reservation(1,toUnixTime(editFromTime.text.toString()),toUnixTime(editToTime.text.toString()),User.getInstance().firebaseUser.email,editPurposeText.text.toString(),chosenRoom.id)
+        val modelStoreService = ApiUtils.getReservationService()
+        val response = modelStoreService.postReservation(reservation)
+        response.enqueue(object : Callback<Int> {
+            override fun onResponse(call: Call<Int>, response: Response<Int>) {
+                if (response.isSuccessful) {
+                    Log.d("MyTag", response.body().toString())
+                    Toast.makeText(applicationContext, "Room successfully booked.", Toast.LENGTH_LONG).show()
+                    User.getInstance().checkUserChoice()
+                    finish()
+                }
+                else{
+                    Log.e("MyTag",response.code().toString())
+
+                    // Dismiss keyboard
+                    val keyboard = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    keyboard.hideSoftInputFromWindow(view.windowToken, 0)
+
+                    // Snackbar
+                    val snack = Snackbar.make(view,"Room is occupied.",Snackbar.LENGTH_LONG)
+                    snack.setAction("Find available room", {
+                        gotoSelectRoom()
+                    })
+                    snack.show()
+                }
+            }
+
+            override fun onFailure(call: Call<Int>, t: Throwable) {
+                Log.e("MyTag",t.message)
+            }
+        })
+    }
 }

@@ -44,20 +44,9 @@ public class RoomActivity extends AppCompatActivity {
     // Handles backbutton in toolbar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) // Press Back Icon
-        {
-            finish();
-        }
+        if (item.getItemId() == android.R.id.home)finish();
 
         return super.onOptionsItemSelected(item);
-    }
-
-    // On list click action - sender data med intent retur
-    public void GoBackMethod(View view) {
-        Intent intent = new Intent(); // Denne intent bruges til at sende data med tilbage i stakken
-        intent.putExtra("SkoStr",42);
-        setResult(RESULT_OK,intent); // Denne linie tilføjer intent til 'finish'
-        finish();
     }
 
     private void getAndShowRooms(int fromTime) {
@@ -69,17 +58,18 @@ public class RoomActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Room>> call, Response<List<Room>> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response",response.body().toString());
+                    Log.d("MyTag",response.body().toString());
                     populateRecyclerView(response.body());
 
                 } else {
                     String message = "Problem " + response.code() + " " + response.message();
+                    Log.d("MyTag",message);
                 }
             }
 
             @Override
             public void onFailure(Call<List<Room>> call, Throwable t) {
-
+                Log.e("MyTag",t.getMessage());
             }
         });
     }
