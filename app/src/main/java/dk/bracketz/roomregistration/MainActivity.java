@@ -9,7 +9,6 @@ import android.icu.util.Calendar;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -26,10 +25,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -48,18 +47,18 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     // Instances for datePickers
-    EditText fromDatePicker;
-    EditText toDatePicker;
-    String myFormat = "dd/MM/yy";
-    SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.GERMAN);
-    final Calendar fromCalendar = Calendar.getInstance();
-    Calendar toCalendar = Calendar.getInstance();
+    private EditText fromDatePicker;
+    private EditText toDatePicker;
+    private final String myFormat = "dd/MM/yy";
+    private final SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.GERMAN);
+    private final Calendar fromCalendar = Calendar.getInstance();
+    private final Calendar toCalendar = Calendar.getInstance();
 
     // Toolbar instance
-    Toolbar toolbar;
+    private Toolbar toolbar;
 
     // Chosen room instance
-    Room chosenRoom = new Room();
+    private final Room chosenRoom = new Room();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +160,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_select_room) {
             // Create intent - go to select room activity
             Intent intent = new Intent(this, RoomActivity.class);
@@ -172,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id== R.id.action_log_in){
             // Create intent - go to login page
             if (!User.getInstance().isSomeoneLoggedIn()){
-                // send til login skærm
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
             }
@@ -182,13 +179,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 alertDialog.setTitle("Logged in as "+ User.getInstance().firebaseUser.getEmail());
                 alertDialog.setMessage("Do you want to log out?");
                 alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Yes",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                User.getInstance().logout();
-                                dialog.dismiss();
-                                Toast toast = Toast.makeText(getApplicationContext(), "You have been logged out.", Toast.LENGTH_LONG);
-                                toast.show();
-                            }
+                        (dialog, which) -> {
+                            User.getInstance().logout();
+                            dialog.dismiss();
+                            Toast toast = Toast.makeText(getApplicationContext(), "You have been logged out.", Toast.LENGTH_LONG);
+                            toast.show();
                         });
                 alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "No", new DialogInterface.OnClickListener() {
                     @Override
@@ -207,17 +202,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Date dialog
     private DatePickerDialog.OnDateSetListener setDate(Calendar cal){
-        return new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear,
-                                  int dayOfMonth) {
-                cal.set(Calendar.YEAR, year);
-                cal.set(Calendar.MONTH, monthOfYear);
-                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                fromDatePicker.setText(sdf.format(fromCalendar.getTime()));
-                toDatePicker.setText(sdf.format(toCalendar.getTime()));
-                getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
-            }
+        return (view, year, monthOfYear, dayOfMonth) -> {
+            cal.set(Calendar.YEAR, year);
+            cal.set(Calendar.MONTH, monthOfYear);
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            fromDatePicker.setText(sdf.format(fromCalendar.getTime()));
+            toDatePicker.setText(sdf.format(toCalendar.getTime()));
+            getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
         };
     }
 
@@ -279,5 +270,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             chosenRoom.setId(roomBundle.getInt("id"));
             Log.d("MyTag",chosenRoom.getName());
         }
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        TextView fromDateTextView = (TextView) findViewById(R.id.mainInputFromDateEditText);
+        fromDateTextView.setText(savedInstanceState.getString("fromDate"));
+
+        TextView toDateTextView = (TextView) findViewById(R.id.mainInputToDateEditText);
+        toDateTextView.setText(savedInstanceState.getString("toDate"));
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        TextView fromDateTextView = (TextView) findViewById(R.id.mainInputFromDateEditText);
+        outState.putString("fromDate", fromDateTextView.getText().toString());
+
+        TextView toDateTextView = (TextView) findViewById(R.id.mainInputToDateEditText);
+        outState.putString("toDate", toDateTextView.getText().toString());
+
+        super.onSaveInstanceState(outState);
     }
 }

@@ -11,20 +11,16 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 
-import java.util.concurrent.Executor;
-
 import dk.bracketz.roomregistration.model.User;
 
 public class LoginActivity extends AppCompatActivity {
 
-    Boolean stayLoggedIn;
-    Switch toggle;
+    private Boolean stayLoggedIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,19 +31,30 @@ public class LoginActivity extends AppCompatActivity {
         // Shows backbutton in toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        toggle = (Switch) findViewById(R.id.loginStayInSwitch);
+        Switch toggle = (Switch) findViewById(R.id.loginStayInSwitch);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                stayLoggedIn = !stayLoggedIn;
-            }
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) { LoginActivity.this.onCheckedChanged(buttonView,isChecked); }
         });
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
         stayLoggedIn = User.getInstance().stayLoggedIn;
         toggle.setChecked(stayLoggedIn);
+    }
+
+    private Toast toast;
+    private void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        stayLoggedIn = !stayLoggedIn;
+
+        if(toast!=null)toast.cancel();
+
+        if (stayLoggedIn){
+            toast = Toast.makeText(getApplicationContext(),"Stay logged in.",Toast.LENGTH_SHORT);
+            toast.show();
+        }
+        else{
+            toast = Toast.makeText(getApplicationContext(),"Log out after a reservation or deletion.",Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     // Handles backbutton in toolbar
@@ -62,33 +69,59 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-
     public void onLogin(View view) {
         EditText emailEdit = (EditText)findViewById(R.id.loginEnterMail);
         String email = emailEdit.getText().toString();
         EditText passwordEdit = (EditText)findViewById(R.id.loginEnterPassword);
         String password = passwordEdit.getText().toString();
 
-        // log in to firebase
-        User.getInstance().mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("MyTag", "signInWithEmail:success");
-                            User.getInstance().login(User.getInstance().mAuth.getCurrentUser(),stayLoggedIn);
-                            finish();
-                            Toast toast = Toast.makeText(getApplicationContext(),"Logged in successfully.",Toast.LENGTH_LONG);
-                            toast.show();
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w("MyTag", "signInWithEmail:failure", task.getException());
-                            Toast toast = Toast.makeText(getApplicationContext(),"Login failed. Try again.",Toast.LENGTH_LONG);
-                            toast.show();
-                        }
+        if (email.isEmpty() || password.isEmpty())loginFailed();
+        else {
+            // log in to firebase
+            User.getInstance().mAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d("MyTag", "signInWithEmail:success");
+                                User.getInstance().login(User.getInstance().mAuth.getCurrentUser(), stayLoggedIn);
+                                finish();
+                                Toast toast = Toast.makeText(getApplicationContext(), "Logged in successfully.", Toast.LENGTH_LONG);
+                                toast.show();
+                            } else {
+                                loginFailed();
+                            }
 
-                    }
-                });
+                        }
+                    });
+        }
+    }
+
+    private void loginFailed(){
+        // If sign in fails, display a message to the user.
+        Log.d("MyTag", "signInWithEmail:failure");
+        Toast toast = Toast.makeText(getApplicationContext(),"Login failed. Try again.",Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        EditText emailEdit = (EditText)findViewById(R.id.loginEnterMail);
+        emailEdit.setText(savedInstanceState.getString("email"));
+
+        EditText passwordEdit = (EditText)findViewById(R.id.loginEnterPassword);
+        passwordEdit.setText(savedInstanceState.getString("password"));
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        EditText emailEdit = (EditText)findViewById(R.id.loginEnterMail);
+        outState.putString("email", emailEdit.getText().toString());
+
+        EditText passwordEdit = (EditText)findViewById(R.id.loginEnterPassword);
+        outState.putString("password", passwordEdit.getText().toString());
+
+        super.onSaveInstanceState(outState);
     }
 }

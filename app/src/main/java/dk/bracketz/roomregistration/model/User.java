@@ -1,29 +1,14 @@
 package dk.bracketz.roomregistration.model;
 
-import android.content.Context;
-import android.util.Log;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
-import java.sql.Struct;
-import java.util.concurrent.Executor;
-
-import dk.bracketz.roomregistration.MainActivity;
 
 public class User {
 
     private static User single_instance = null;
 
     // Firebase auth
-    public FirebaseAuth mAuth;
+    public final FirebaseAuth mAuth;
     public FirebaseUser firebaseUser;
 
     private User(){
@@ -37,10 +22,7 @@ public class User {
     }
 
     public boolean isSomeoneLoggedIn(){
-        if (firebaseUser != null){
-            return true;
-        }
-        return false;
+        return firebaseUser != null;
     }
 
     public void login(FirebaseUser user, Boolean stayLoggedIn){
@@ -48,13 +30,10 @@ public class User {
         this.stayLoggedIn = stayLoggedIn;
     }
 
-    public boolean logout(){
+    public void logout(){
         // log out from firebase
         mAuth.signOut();
-
         firebaseUser = null;
-        if(firebaseUser== null)return true;
-        return false;
     }
 
     public void checkUserChoice(){

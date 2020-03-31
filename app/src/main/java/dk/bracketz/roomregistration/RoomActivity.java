@@ -5,20 +5,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
-import java.io.Serializable;
 import java.util.List;
 
-import dk.bracketz.roomregistration.adapter.ReservationAdapter;
 import dk.bracketz.roomregistration.adapter.RoomAdapter;
-import dk.bracketz.roomregistration.model.Reservation;
 import dk.bracketz.roomregistration.model.Room;
 import dk.bracketz.roomregistration.restconsuming.ApiUtils;
 import dk.bracketz.roomregistration.restconsuming.ModelService;
@@ -29,7 +23,7 @@ import retrofit2.Response;
 public class RoomActivity extends AppCompatActivity {
 
     // Instance af adapter
-    RoomAdapter adapter;
+    private RoomAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,13 +91,10 @@ public class RoomActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         adapter.setOnItemClickListener((view, position, item) -> {
 
-            // Retrieves room object from list
-            Room chosenRoom = (Room) item;
-
             // Creates bundle and add properties to it
             Bundle roomBundle = new Bundle();
-            roomBundle.putInt("id",chosenRoom.getId());
-            roomBundle.putString("name",chosenRoom.getName());
+            roomBundle.putInt("id", ((Room) item).getId());
+            roomBundle.putString("name", ((Room) item).getName());
 
             // Creates intent to carry data on way back
             Intent intent = new Intent();

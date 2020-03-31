@@ -1,7 +1,6 @@
 package dk.bracketz.roomregistration.adapter;
 
 import android.content.Context;
-import android.icu.text.SimpleDateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
-import java.util.Locale;
 
 import dk.bracketz.roomregistration.R;
 import dk.bracketz.roomregistration.model.Room;

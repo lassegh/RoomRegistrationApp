@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
     private static ReservationAdapter mAdapter;
     private final ColorDrawable background;
-    private Context context;
+    private final Context context;
 
     public SwipeToDeleteCallback(ReservationAdapter adapter, Context c) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
