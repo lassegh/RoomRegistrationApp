@@ -1,4 +1,4 @@
-package dk.bracketz.roomregistration.adapter;
+package dk.bracketz.roomregistration.activities.main;
 
 import android.content.Context;
 import android.icu.text.SimpleDateFormat;
@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Locale;
 
 import dk.bracketz.roomregistration.R;
+import dk.bracketz.roomregistration.helpers.ApiUtils;
+import dk.bracketz.roomregistration.helpers.FirebaseLogin;
+import dk.bracketz.roomregistration.helpers.ModelService;
 import dk.bracketz.roomregistration.model.Reservation;
-import dk.bracketz.roomregistration.model.User;
-import dk.bracketz.roomregistration.restconsuming.ApiUtils;
-import dk.bracketz.roomregistration.restconsuming.ModelService;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,7 +35,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     public boolean deleteItem(int position) {
         Reservation mRecentlyDeletedItem = reservations.get(position);
-        if (User.getInstance().isSomeoneLoggedIn() && mRecentlyDeletedItem.getUserId().equals(User.getInstance().firebaseUser.getEmail())){
+        if (FirebaseLogin.getInstance().isSomeoneLoggedIn() && mRecentlyDeletedItem.getUserId().equals(FirebaseLogin.getInstance().firebaseUser.getEmail())){
             reservations.remove(position);
             notifyItemRemoved(position);
             ModelService modelStoreService = ApiUtils.getReservationService();
@@ -44,7 +44,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
                 @Override
                 public void onResponse(Call<Void> call, Response<Void> response) {
                     if (response.isSuccessful()) {
-                        User.getInstance().checkUserChoice();
+                        FirebaseLogin.getInstance().checkUserChoice();
                         Log.d("response",response.code()+"");
                     } else {
                         Log.d("response","Response unsuccessful");

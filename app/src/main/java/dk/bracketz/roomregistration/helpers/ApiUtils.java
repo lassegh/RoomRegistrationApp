@@ -1,4 +1,4 @@
-package dk.bracketz.roomregistration.restconsuming;
+package dk.bracketz.roomregistration.helpers;
 
 public class ApiUtils {
     private static final String BASE_URL = "http://anbo-roomreservationv3.azurewebsites.net/api/";

@@ -1,4 +1,4 @@
-package dk.bracketz.roomregistration.restconsuming;
+package dk.bracketz.roomregistration.helpers;
 
 import java.util.List;
 

@@ -1,7 +1,4 @@
-package dk.bracketz.roomregistration;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+package dk.bracketz.roomregistration.activities.login;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -12,11 +9,10 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
+import androidx.appcompat.app.AppCompatActivity;
 
-import dk.bracketz.roomregistration.model.User;
+import dk.bracketz.roomregistration.R;
+import dk.bracketz.roomregistration.helpers.FirebaseLogin;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -34,7 +30,7 @@ public class LoginActivity extends AppCompatActivity {
         Switch toggle = findViewById(R.id.loginStayInSwitch);
         toggle.setOnCheckedChangeListener((buttonView, isChecked) -> LoginActivity.this.onCheckedChanged(buttonView,isChecked));
 
-        stayLoggedIn = User.getInstance().stayLoggedIn;
+        stayLoggedIn = FirebaseLogin.getInstance().stayLoggedIn;
         toggle.setChecked(stayLoggedIn);
     }
 
@@ -71,12 +67,12 @@ public class LoginActivity extends AppCompatActivity {
         if (email.isEmpty() || password.isEmpty())loginFailed();
         else {
             // log in to firebase
-            User.getInstance().mAuth.signInWithEmailAndPassword(email, password)
+            FirebaseLogin.getInstance().mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, task -> {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("MyTag", "signInWithEmail:success");
-                            User.getInstance().login(User.getInstance().mAuth.getCurrentUser(), stayLoggedIn);
+                            FirebaseLogin.getInstance().login(FirebaseLogin.getInstance().mAuth.getCurrentUser(), stayLoggedIn);
                             finish();
                             Toast toast = Toast.makeText(getApplicationContext(), "Logged in successfully.", Toast.LENGTH_LONG);
                             toast.show();
@@ -86,8 +82,6 @@ public class LoginActivity extends AppCompatActivity {
 
                     });
         }
-
-        // TODO save user credentials on device if stayLoggedIn
     }
 
     private void loginFailed(){

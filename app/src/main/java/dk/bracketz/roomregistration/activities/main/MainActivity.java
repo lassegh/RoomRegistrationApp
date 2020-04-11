@@ -1,4 +1,4 @@
-package dk.bracketz.roomregistration;
+package dk.bracketz.roomregistration.activities.main;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -6,8 +6,13 @@ import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -18,26 +23,22 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.util.Log;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import dk.bracketz.roomregistration.adapter.ReservationAdapter;
-import dk.bracketz.roomregistration.adapter.SwipeToDeleteCallback;
+import dk.bracketz.roomregistration.R;
+import dk.bracketz.roomregistration.activities.addBooking.AddBookingActivity;
+import dk.bracketz.roomregistration.activities.login.LoginActivity;
+import dk.bracketz.roomregistration.activities.room.RoomActivity;
+import dk.bracketz.roomregistration.helpers.ApiUtils;
+import dk.bracketz.roomregistration.helpers.FirebaseLogin;
+import dk.bracketz.roomregistration.helpers.ModelService;
 import dk.bracketz.roomregistration.model.Reservation;
 import dk.bracketz.roomregistration.model.Room;
-import dk.bracketz.roomregistration.model.User;
-import dk.bracketz.roomregistration.restconsuming.ApiUtils;
-import dk.bracketz.roomregistration.restconsuming.ModelService;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Context thisContext = this;
 
         // Init User / Firebase
-        User.getInstance();
+        FirebaseLogin.getInstance();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Floating action button
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
-            if (User.getInstance().isSomeoneLoggedIn()){
+            if (FirebaseLogin.getInstance().isSomeoneLoggedIn()){
                 Intent intent = new Intent(thisContext, AddBookingActivity.class);
                 Bundle roomBundle = new Bundle();
                 roomBundle.putString("name",chosenRoom.getName());
@@ -155,18 +156,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (id== R.id.action_log_in){
             // Create intent - go to login page
-            if (!User.getInstance().isSomeoneLoggedIn()){
+            if (!FirebaseLogin.getInstance().isSomeoneLoggedIn()){
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
             }
             else{
                 // Spørg bruger om han ønsker at logge ud
                 AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                alertDialog.setTitle("Logged in as "+ User.getInstance().firebaseUser.getEmail());
+                alertDialog.setTitle("Logged in as "+ FirebaseLogin.getInstance().firebaseUser.getEmail());
                 alertDialog.setMessage("Do you want to log out?");
                 alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Yes",
                         (dialog, which) -> {
-                            User.getInstance().logout();
+                            FirebaseLogin.getInstance().logout();
                             dialog.dismiss();
                             Toast toast = Toast.makeText(getApplicationContext(), "You have been logged out.", Toast.LENGTH_LONG);
                             toast.show();
@@ -258,6 +259,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         TextView toDateTextView = (TextView) findViewById(R.id.mainInputToDateEditText);
         toDateTextView.setText(savedInstanceState.getString("toDate"));
+
+        getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
     }
 
     @Override

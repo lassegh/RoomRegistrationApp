@@ -1,21 +1,20 @@
-package dk.bracketz.roomregistration;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+package dk.bracketz.roomregistration.activities.room;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import dk.bracketz.roomregistration.adapter.RoomAdapter;
+import dk.bracketz.roomregistration.R;
 import dk.bracketz.roomregistration.model.Room;
-import dk.bracketz.roomregistration.restconsuming.ApiUtils;
-import dk.bracketz.roomregistration.restconsuming.ModelService;
+import dk.bracketz.roomregistration.helpers.ApiUtils;
+import dk.bracketz.roomregistration.helpers.ModelService;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

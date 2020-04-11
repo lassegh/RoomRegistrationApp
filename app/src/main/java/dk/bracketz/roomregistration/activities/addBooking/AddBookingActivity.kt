@@ -1,6 +1,7 @@
-package dk.bracketz.roomregistration
+package dk.bracketz.roomregistration.activities.addBooking
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.icu.text.SimpleDateFormat
@@ -12,16 +13,18 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import dk.bracketz.roomregistration.helperclasses.calendarSetter
+import dk.bracketz.roomregistration.R
+import dk.bracketz.roomregistration.activities.room.RoomActivity
 import dk.bracketz.roomregistration.model.Reservation
 import dk.bracketz.roomregistration.model.Room
-import dk.bracketz.roomregistration.model.User
-import dk.bracketz.roomregistration.restconsuming.ApiUtils
+import dk.bracketz.roomregistration.helpers.ApiUtils
+import dk.bracketz.roomregistration.helpers.FirebaseLogin
 import kotlinx.android.synthetic.main.activity_add_booking.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -103,11 +106,11 @@ class AddBookingActivity : AppCompatActivity() {
         if (id == R.id.action_log_in) {
             // Spørg bruger om han ønsker at logge ud
             val alertDialog = AlertDialog.Builder(this@AddBookingActivity).create()
-            alertDialog.setTitle("Logged in as " + User.getInstance().firebaseUser.email)
+            alertDialog.setTitle("Logged in as " + FirebaseLogin.getInstance().firebaseUser.email)
             alertDialog.setMessage("Do you want to log out?")
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Yes"
             ) { dialog, which ->
-                User.getInstance().logout()
+                FirebaseLogin.getInstance().logout()
                 dialog.dismiss()
                 val toast = Toast.makeText(applicationContext, "You have been logged out.", Toast.LENGTH_LONG)
                 toast.show()
@@ -152,7 +155,7 @@ class AddBookingActivity : AppCompatActivity() {
     }
 
     private fun saveRegistration(view: View){
-        val reservation = Reservation(1,toUnixTime(editFromTime.text.toString()),toUnixTime(editToTime.text.toString()),User.getInstance().firebaseUser.email,editPurposeText.text.toString(),chosenRoom.id)
+        val reservation = Reservation(1,toUnixTime(editFromTime.text.toString()),toUnixTime(editToTime.text.toString()), FirebaseLogin.getInstance().firebaseUser.email,editPurposeText.text.toString(),chosenRoom.id)
         val modelStoreService = ApiUtils.getReservationService()
         val response = modelStoreService.postReservation(reservation)
         response.enqueue(object : Callback<Int> {
@@ -160,7 +163,7 @@ class AddBookingActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     Log.d("MyTag", response.body().toString())
                     Toast.makeText(applicationContext, "Room successfully booked.", Toast.LENGTH_LONG).show()
-                    User.getInstance().checkUserChoice()
+                    FirebaseLogin.getInstance().checkUserChoice()
                     finish()
                 }
                 else{
@@ -183,5 +186,20 @@ class AddBookingActivity : AppCompatActivity() {
                 Log.e("MyTag",t.message)
             }
         })
+    }
+
+    private fun calendarSetter(c: Calendar, textField: EditText, context: Context, timeFormat: SimpleDateFormat): DatePickerDialog.OnDateSetListener {
+        return DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+            c[Calendar.YEAR] = year
+            c[Calendar.MONTH] = monthOfYear
+            c[Calendar.DAY_OF_MONTH] = dayOfMonth
+
+            // Nested time picker
+            TimePickerDialog(context, TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+                c[Calendar.HOUR_OF_DAY] = hourOfDay
+                c[Calendar.MINUTE] = minute
+                textField.setText(timeFormat.format(c.time))
+            }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show()
+        }
     }
 }

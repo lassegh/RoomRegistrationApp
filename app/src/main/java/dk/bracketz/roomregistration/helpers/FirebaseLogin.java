@@ -1,23 +1,20 @@
-package dk.bracketz.roomregistration.model;
+package dk.bracketz.roomregistration.helpers;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class User {
+public class FirebaseLogin {
 
-    private static User single_instance = null;
+    private static FirebaseLogin single_instance = null;
 
     // Firebase auth
     public final FirebaseAuth mAuth;
     public FirebaseUser firebaseUser;
 
-    private User(){
+    private FirebaseLogin(){
         stayLoggedIn = false;
 
-        // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
-
-        // Check if user is signed in (non-null) and update UI accordingly.
         firebaseUser = mAuth.getCurrentUser();
     }
 
@@ -34,17 +31,15 @@ public class User {
         // log out from firebase
         mAuth.signOut();
         firebaseUser = null;
-
-        // TODO delete user credentials from device
     }
 
     public void checkUserChoice(){
         if (!stayLoggedIn)logout();
     }
 
-    public static User getInstance(){
+    public static FirebaseLogin getInstance(){
         if (single_instance == null)
-            single_instance = new User();
+            single_instance = new FirebaseLogin();
         return single_instance;
     }
 

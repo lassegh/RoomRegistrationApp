@@ -1,4 +1,4 @@
-package dk.bracketz.roomregistration.adapter;
+package dk.bracketz.roomregistration.activities.main;
 
 import android.content.Context;
 import android.graphics.Canvas;

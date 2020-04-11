@@ -1,4 +1,4 @@
-package dk.bracketz.roomregistration.adapter;
+package dk.bracketz.roomregistration.activities.room;
 
 import android.content.Context;
 import android.util.Log;
