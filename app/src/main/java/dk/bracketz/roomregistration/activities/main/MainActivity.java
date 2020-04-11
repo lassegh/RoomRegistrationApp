@@ -1,7 +1,6 @@
 package dk.bracketz.roomregistration.activities.main;
 
 import android.app.DatePickerDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
@@ -60,24 +59,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        chosenRoom.setName("RO-D3.07");
-        chosenRoom.setId(1);
-        Context thisContext = this;
-
-        // Init User / Firebase
-        FirebaseLogin.getInstance();
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("RO-D3.07");
-        setSupportActionBar(toolbar);
 
-        // Floating action button
+        setupChosenRoom();
+        setupFloatingButton();
+        setupDatePickers();
+        setupToolbar();
+        setupSwipeRefresh();
+    }
+
+    private void setupChosenRoom(){
+        chosenRoom.setName("RO-D3.07");
+        chosenRoom.setId(1);
+    }
+
+    private void setupFloatingButton(){
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
             if (FirebaseLogin.getInstance().isSomeoneLoggedIn()){
-                Intent intent = new Intent(thisContext, AddBookingActivity.class);
+                Intent intent = new Intent(this, AddBookingActivity.class);
                 Bundle roomBundle = new Bundle();
                 roomBundle.putString("name",chosenRoom.getName());
                 roomBundle.putInt("id",chosenRoom.getId());
@@ -89,15 +90,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 toast.show();
             }
         });
+    }
 
-        // From Date Picker init
+    private void setupDatePickers(){
         fromDatePicker = (EditText) findViewById(R.id.mainInputFromDateEditText);
         fromDatePicker.setText(dateFormat.format(new Date()));
         fromDatePicker.setOnClickListener(v -> new DatePickerDialog(MainActivity.this, setDate(fromCalendar), fromCalendar
                 .get(Calendar.YEAR), fromCalendar.get(Calendar.MONTH),
                 fromCalendar.get(Calendar.DAY_OF_MONTH)).show());
 
-        // To date picker init
         toDatePicker = (EditText) findViewById(R.id.mainInputToDateEditText);
         final Date toDate = new Date();
         toCalendar.setTime(toDate);
@@ -106,8 +107,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toDatePicker.setOnClickListener(v -> new DatePickerDialog(MainActivity.this, setDate(toCalendar), toCalendar
                 .get(Calendar.YEAR), toCalendar.get(Calendar.MONTH),
                 toCalendar.get(Calendar.DAY_OF_MONTH)).show());
+    }
 
-        // Init swipe to refresh
+    private void setupToolbar(){
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("RO-D3.07");
+        setSupportActionBar(toolbar);
+    }
+
+    private void setupSwipeRefresh(){
         SwipeRefreshLayout refreshLayout = findViewById(R.id.mainSwiperefresh);
         refreshLayout.setOnRefreshListener(() -> {
             getAndShowReservations(chosenRoom.getId(), toUnixTime(fromDatePicker.getText().toString()), toUnixTime(toDatePicker.getText().toString()));
