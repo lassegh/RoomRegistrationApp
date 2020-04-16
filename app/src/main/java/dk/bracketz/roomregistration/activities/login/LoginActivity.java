@@ -75,6 +75,7 @@ public class LoginActivity extends AppCompatActivity {
                             FirebaseLogin.getInstance().login(FirebaseLogin.getInstance().mAuth.getCurrentUser(), stayLoggedIn);
                             finish();
                             Toast toast = Toast.makeText(getApplicationContext(), "Logged in successfully.", Toast.LENGTH_LONG);
+
                             toast.show();
                         } else {
                             loginFailed();
